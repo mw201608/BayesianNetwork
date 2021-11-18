@@ -1,0 +1,44 @@
+#!/bin/bash
+
+usage () {
+	SCRIPT=$(readlink -f "$0")
+	echo Usage:
+	echo $SCRIPT parameter_file
+	echo
+}
+
+BASEDIR=$HOME/user/RIMBANet
+
+cmdRoot=$BASEDIR/script
+
+paramf=$1
+if [[ "$paramf" = "" ]]; then usage && exit 1 ; fi
+
+nSample=`sed -n "1{p;q;}" $paramf`
+nodef=`sed -n "3{p;q;}" $paramf`
+dataf=`sed -n "4{p;q;}" $paramf`
+N=`sed -n "8{p;q;}" $paramf`
+outDir=`sed -n "9{p;q;}" $paramf`
+outPref=`sed -n "10{p;q;}" $paramf`
+
+#
+prog="testBN -f 0"
+
+#generate consensus
+
+#echo "perl $cmdRoot/countDirectLinksMatrix.pl $dataf $outDir/$outPref 0 $N $outDir/junk.0 dag.0 0"
+#perl $cmdRoot/countDirectLinksMatrix.pl $dataf $outDir/$outPref 0 $N $outDir/junk.0 dag.0 0
+#rm $outDir/junk.0  #clear log file
+
+#
+cutoff=$2
+if [ "$cutoff" = "" ]; then cutoff=3 ; fi
+
+if [ ! -e result.links.$cutoff ] ; then
+	echo "perl $cmdRoot/countDirectLinksMatrix.pl $dataf $outDir/$outPref 0 $N result.links.$cutoff result.linksMatrix.$cutoff 0.$cutoff"
+	perl $cmdRoot/countDirectLinksMatrix.pl $dataf $outDir/$outPref 0 $N result.links.$cutoff result.linksMatrix.$cutoff 0.$cutoff
+	echo "$prog -b $nodef -d $dataf -t 0  -D $nSample -o result.links$cutoff -c result.links.$cutoff >junk$cutoff"
+	$prog -b $nodef -d $dataf -t 0  -D $nSample -o result.links$cutoff -c result.links.$cutoff >$outDir/junk$cutoff
+	grep ">" result.links$cutoff | perl -pe "s/->/\t/" > result.links$cutoff.links.txt
+	rm $outDir/junk$cutoff #clear log file
+fi

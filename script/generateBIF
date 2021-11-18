@@ -1,0 +1,73 @@
+#!/bin/bash
+#
+#This script outputs XML format, specifying for each node as a discrete variable of $nstate (a positive number) states, or a continuous variable when $nstate < 0
+#Modified from Jun's perl script
+#Author: Minghui Wang
+#
+
+#node file
+inF=$1
+#network name
+networkName=$2
+#n discrete states
+nstate=$3
+if [ $nstate -eq 0 ]; then nstate=3 ; fi
+
+#read node name
+name=(`awk '$1 !~/^#/ { print $1 }' $inF`) #skip lines beginning with '#'
+
+n=${#name[@]} #number of nodes
+
+#print header
+echo "<?xml version=\"1.0\"?>"
+echo "<!-- DTD for the BIF format -->"
+echo "<!DOCTYPE BIF ["
+echo "	<!ELEMENT BIF ( NETWORK )*>"
+echo "	<!ELEMENT PROPERTY (#PCDATA)>"
+echo "	<!ELEMENT TYPE (#PCDATA)>"
+echo "	<!ELEMENT VALUE (#PCDATA)>"
+echo "	<!ELEMENT NAME (#PCDATA)>"
+echo "	<!ELEMENT NETWORK"
+echo "		( NAME, ( PROPERTY | VARIABLE | PROBABILITY |LIKELIHOOD)* )>"
+echo "	<!ELEMENT VARIABLE ( NAME, TYPE, ( VALUE |  PROPERTY )* ) >"
+echo "	<!ELEMENT PROBABILITY"
+echo "		( FOR | GIVEN | TABLE | ENTRY | DEFAULT | PROPERTY )* >"
+echo "	<!ELEMENT PRIOR ( FOR | GIVEN | PROPERTY )* >"
+echo "	<!ELEMENT FOR (#PCDATA)>"
+echo "	<!ELEMENT GIVEN (#PCDATA)>"
+echo "	<!ELEMENT TABLE (#PCDATA)>"
+echo "	<!ELEMENT DEFAULT (TABLE)>"
+echo "	<!ELEMENT ENTRY ( VALUE* , TABLE )>"
+echo "]>"
+echo "<BIF>"
+echo "<NETWORK size=\"$n\">"
+echo "<NAME>$networkName</NAME>"
+echo "<!-- Variables -->"
+
+#print nodes
+i=0
+while [ $i -lt $n ]; do
+	echo "<VARIABLE>"
+	echo "	<NAME>${name[$i]}</NAME>"
+    if [ $nstate -lt 0 ]; then
+		echo "	<TYPE>continuous</TYPE>"
+    elif [ $nstate -eq 3 ] ; then
+	    echo "	<TYPE>discrete</TYPE>"
+	    echo "	<VALUE>down</VALUE>"
+	    echo "	<VALUE>no</VALUE>"
+	    echo "	<VALUE>up</VALUE>"
+    else
+		echo "	<TYPE>discrete</TYPE>";
+		j=0
+		while [  $j -lt $nstate ]; do
+			echo "	<VALUE>S${j}</VALUE>"
+			let j=j+1
+		done
+	fi
+	echo "</VARIABLE>"
+	let i=i+1
+done
+
+#print footer
+echo "</NETWORK>"
+echo "</BIF>"

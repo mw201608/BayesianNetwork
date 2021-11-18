@@ -1,0 +1,96 @@
+#!/bin/bash
+#bash script to call construct Bayesian network using Jun's testBN program
+#Author: Minghui Wang
+#
+Usage () {
+	echo "Usage:"
+	echo $0 workingDir expDataFileName nodeXMLFileName priorFileName bannedMatrixFileName Label outputDir outputFilePrefix numberOfNetworks numberOfNodes numberOfSamples numberOfClasses [parameterFileName]
+	echo
+	exit 0;
+}
+
+BASEDIR=$HOME/user/RIMBANet
+
+cmdRoot=$BASEDIR/script
+
+if [ $# -lt 11 ]; then Usage; fi #check number of arguments
+
+#I/O
+wkDir=$1    #working directory containing the input and output files
+dataf=$2    #required input, matrix of discretized expression data, node by sample, the first column is node name
+nodef=$3    #xml file name to specify node property
+priorf=$4   #will be created by the program
+banf=$5     #(will be created if not available) matrix of 1 or 0: 1 if row element can not be parent of column element; 0 otherwise
+Label=$6    #Label
+outDir=$7   #output directory
+outPref=$8  #output file prefix
+N=$9        #number of Bayesian networks to construct
+nNode=${10}   #number of nodes (genes)
+nSample=${11} #number of samples
+nClass=${12}  #number of discrete groups for each gene
+paramf=${13}  #parameter file name
+#
+prog="testBN -f 0"
+
+#
+if [[ "$wkDir" == "" || "$dataf" == "" || "$nodef" == "" || "$priorf" == "" || "$banf" == "" \
+ || "$Label" == "" || "$outDir" == "" || "$outPref" == "" || "$N" == "" || "$nNode" == "" \
+ || "$nSample" == "" || "$nClass" == "" ]]; then Usage; fi
+#
+if [ "$paramf" == "" ]; then paramf='bn.params'; fi #file to save the running parameters
+
+echo $0 $wkDir $dataf $nodef $priorf $banf $Label $outDir $outPref $N $nNode $nSample $nClass $paramf
+
+#
+echo Working directory: $wkDir
+cd $wkDir
+
+if [ ! -e $dataf ]; then echo "$dataf not found in the working directory" && exit 1 ; fi
+
+#banned matrix
+echo Make default banned matrix file $banf
+echo "$cmdRoot/identityMatrix $nNode >$banf"
+$cmdRoot/identityMatrix $nNode >$banf
+
+#prepare node info (discrete or continuous variable)
+echo "generateBIF $dataf \"${nNode}-node network\" $nClass  >$nodef"
+generateBIF $dataf "${nNode}-node network" $nClass  >$nodef
+
+#make directory
+outDir=`echo $outDir | perl -pe 's/\/$//'`
+if [ ! -e $outDir ]; then mkdir -p $outDir; fi
+
+#prior
+echo "Compute prior"
+echo "$prog -b $nodef -d $dataf -t 0 -T 0 -D $nSample -o $outDir/junk -r 1 -L 1 >$outDir/junk"
+$prog -b $nodef -d $dataf -t 0 -T 0 -D $nSample -o $outDir/junk -r 1 -L 1 >$outDir/junk # "-o $outDir/junk" option has no effect in this running mode
+echo "egrep  \> $outDir/junk > $priorf"
+egrep  \> $outDir/junk > $priorf #print those lines containing character '>'
+rm $outDir/junk #clear log file
+
+#prepare parameter file
+if [ -f $paramf ] ; then rm $paramf; fi
+echo $nSample >> $paramf #1
+echo $nNode >> $paramf   #2
+echo $nodef >> $paramf   #3
+echo $dataf >> $paramf   #4
+echo $banf >> $paramf    #5
+echo $priorf >> $paramf  #6
+echo $Label >> $paramf   #7
+echo $N >> $paramf       #8
+echo $outDir >> $paramf  #9
+echo $outPref >> $paramf #10
+
+#
+echo Parameter file $paramf created.
+
+#Construct multiple BNs
+echo Next step: submit job script BNJob.bsh
+echo "Or manually run in terminal:"
+echo "cd `pwd`; for i in \`seq 1 $N\`; do $cmdRoot/BNJob.bsh \$i; done"
+#for i in `seq 1 $N`; do $cmdRoot/BNJob.bsh $i; done #terminal
+#bsub -J "BN[1-$N]" <$cmdRoot/BNJob.bsh #submit to queue
+
+#make consensus BN
+echo When BNJob is done, call createStructure.bsh to assemble consensus network
+#$cmdRoot/createStructure.bsh $paramf

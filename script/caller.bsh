@@ -1,0 +1,58 @@
+#!/bin/bash
+#prepare BN parameters and submit BN jobs for large dataset
+#Author: Minghui Wang
+
+Usage () {
+	echo "Usage:"
+	echo $0 workingDir 
+	echo
+	exit 0;
+}
+
+
+bnWkDir=$1 #working directory
+
+if [ "$bnWkDir" = "" ]; then Usage && exit 1 ; fi
+
+BASEDIR=$HOME/user/RIMBANet
+
+cmdRoot=$BASEDIR/script
+#set fixed parameters
+nNetwork=1000
+datf=data.discretized.txt #discretized expression data (genes in the row; samples in the col; the first column is gene ID; no sample id in the first row)
+paramf=bn.param.txt
+nc=3 #number of categorical classes after Discretization
+outSubDir=networks
+outPref=result
+nodef=node.xml
+priorf=prior.txt
+
+#Run Bayesian network analysis
+cd $bnWkDir
+sid=`echo $bnWkDir | perl -pe "s/\/$//" | perl -pe "s/.+\/([^\/]+)\/?$/\1/"`
+if [ "$sid" = "" ] ; then sid="BN" ; fi
+nsample=`awk -F'\t' '{print NF; exit}' $datf` #find the number of columns
+ngene=`cat $datf | wc -l` #find the number of rows
+nsample=$((nsample-1)) #first column is gene id
+banf=banned.txt
+
+#
+echo $sid: $ngene x $nsample
+
+#
+echo $cmdRoot/runBN.bsh $bnWkDir $datf $nodef $priorf $banf $sid $outSubDir $outPref $nNetwork $ngene $nsample $nc $paramf
+$cmdRoot/runBN.bsh $bnWkDir $datf $nodef $priorf $banf $sid $outSubDir $outPref $nNetwork $ngene $nsample $nc $paramf
+if [ $? -ne 0 ]; then
+	runBN.bsh failed. Please re-run manually to check error mesaage.
+	exit 0
+else
+	echo BN preparation done!
+fi
+
+echo Submit jobs to construct BNs
+echo bsub -J \"$sid[1-$nNetwork]\" <$cmdRoot/BNJob.bsh
+bsub -J "$sid[1-$nNetwork]" <$cmdRoot/BNJob.bsh
+echo BN jobs submitted
+
+# When BNJob is done, call createStructure.bsh to assemble consensus network
+#$cmdRoot/createStructure.bsh $paramf

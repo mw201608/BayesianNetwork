@@ -1,0 +1,29 @@
+#!/bin/bash
+#Author: Minghui Wang
+#
+#BSUB -q express
+#BSUB -P acc_
+#BSUB -W 4:00
+#BSUB -J BN
+#BSUB -oo %J.out.%I
+#BSUB -eo %J.err.%I
+#BSUB -n 1
+#BSUB -R "span[hosts=1] rusage[mem=6000]"
+
+paramf='bn.param.txt'
+if [ ! -e $paramf ]; then echo "File $paramf not exists" && exit 1 ; fi
+
+jobID=$LSB_JOBINDEX
+if [ "$jobID" == "" ]; then jobID=$1; fi
+if [ "$jobID" == "" ]; then echo "Job id must be supplied" && exit 1 ; fi
+
+# Absolute path to this script, e.g. /home/user/bin/foo.sh
+SCRIPT=$(readlink -f "$0")
+
+# Absolute path this script is in, eg /home/user/bin
+#BASEDIR=$(dirname "$SCRIPT")
+BASEDIR=$HOME/user/RIMBANet
+
+echo $BASEDIR/script/BNJobbase.bsh $paramf $jobID
+
+$BASEDIR/script/BNJobbase.bsh $paramf $jobID

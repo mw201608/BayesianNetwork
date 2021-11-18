@@ -1,0 +1,50 @@
+#!/bin/bash
+#Author: Minghui Wang
+
+usage () {
+	SCRIPT=$(readlink -f "$0")
+	echo Usage:
+	echo $SCRIPT parameter_file jobID
+	echo
+}
+
+paramf=$1
+jobID=$2
+if [[ "$jobID" = "" || "$paramf" = "" ]]; then usage && exit 1 ; fi
+if [[ ! -e $paramf ]]; then echo "File $paramf not exists" && exit 1 ; fi
+
+nSample=`sed -n "1{p;q;}" $paramf`
+nNode=`sed -n "2{p;q;}" $paramf`
+nodef=`sed -n "3{p;q;}" $paramf`
+dataf=`sed -n "4{p;q;}" $paramf`
+banf=`sed -n "5{p;q;}" $paramf`
+priorf=`sed -n "6{p;q;}" $paramf`
+N=`sed -n "8{p;q;}" $paramf`
+outDir=`sed -n "9{p;q;}" $paramf`
+outPref=`sed -n "10{p;q;}" $paramf`
+
+echo Parameters: $nSample $nNode $nodef $dataf $banf $priorf
+
+#
+Seed=$((1237+$jobID))
+
+#
+prog="testBN -f 0 -M 5000000" #put testBN in on existing PATH
+
+#the values for new ban matrix
+qratio=`echo "scale=10; 1/($nNode+1000)" | bc` #in which scale=10 sets the number of decimal digits of the result from bc command
+te=0 #for eQTL
+ti=-1 #threshold for mutual info
+alpha=`echo "0.65-($nSample/100)*0.015" | bc` #use in BIC to penalize complexity
+r=1 #factor for scale priors
+
+tl=''
+up=''
+
+echo "$prog -s $Seed -b $nodef -d $dataf -t -1 -T $te -D $nSample -r $r -P $priorf -a $alpha -q $qratio $tl -g $banf $up -o $outDir/${outPref}.$jobID >$outDir/junkK.$jobID"
+
+$prog -s $Seed -b $nodef -d $dataf -t $ti -T $te -D $nSample -r $r -P $priorf -a $alpha -q $qratio $tl -g $banf $up -o $outDir/${outPref}.$jobID >$outDir/junkK.$jobID #>/dev/null
+
+echo BNJob done!
+
+date
