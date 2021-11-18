@@ -16,5 +16,5 @@ bash $HOME/user/RIMBANet/script/caller.bsh /path/to/working/directory
 
 4. When LSF jobs are completed successfully, create a consensus network structure (default final output `result.links3.links.txt`) consists of de-looped links present in, by default, at least 30% of the individual structure.
 ```
-bash $HOME/work/bayesian/RIMBANet/src/createStructure.bsh bn.param.txt
+bash $HOME/user/RIMBANet/script/createStructure.bsh bn.param.txt
 ```
