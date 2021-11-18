@@ -1,6 +1,6 @@
 ## Bayesian network analysis pipeline
 
-This repository provides a simple pipeline to perform Bayesian probabilistic network inference using the RIMBANet software.
+This repository provides a simple example pipeline to perform Bayesian probabilistic network inference using the RIMBANet software.
 
 Usage:
 
