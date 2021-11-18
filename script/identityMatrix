@@ -1,0 +1,14 @@
+#!/usr/bin/perl -w
+use strict;
+my $nNode=$ARGV[0];
+for my $i (1..$nNode){
+	for my $j (1..$nNode){
+		print "\t" if($j > 1);
+		if($i == $j){
+			print 1;
+		}else{
+			print 0;
+		}
+	}
+	print "\n";
+}
