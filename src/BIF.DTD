@@ -1,0 +1,28 @@
+<?xml version="1.0"?>
+
+<!-- DTD for the BIF format -->
+<!DOCTYPE BIF [
+      <!ELEMENT BIF ( NETWORK )*>
+      <!ELEMENT PROPERTY (#PCDATA)>
+      <!ELEMENT TYPE (#PCDATA)>
+      <!ELEMENT VALUE (#PCDATA)>
+      <!ELEMENT NAME (#PCDATA)>
+      <!ELEMENT NETWORK
+          ( NAME, ( PROPERTY | VARIABLE | PROBABILITY )* )>
+	<!ATTLIST NETWORK size CDATA #REQUIRED>
+      <!ELEMENT VARIABLE ( NAME, TYPE, ( VALUE |  PROPERTY )* ) >
+      <!ELEMENT PROBABILITY
+          ( FOR | GIVEN | TABLE | ENTRY | DEFAULT | PROPERTY )* >
+      <!ELEMENT PRIOR
+          ( FOR | GIVEN | PROPERTY )* >
+      <!ELEMENT REACHABLE
+          ( TO | FROM | PROPERTY )* >		
+      <!ELEMENT FOR (#PCDATA)>
+      <!ELEMENT GIVEN (#PCDATA)>
+      <!ELEMENT TABLE (#PCDATA)>
+      <!ELEMENT DEFAULT (TABLE)>
+      <!ELEMENT ENTRY ( VALUE* , TABLE )>
+      <!ELEMENT TO (#PCDATA)>
+      <!ELEMENT FROM (#PCDATA)>
+]>
+
