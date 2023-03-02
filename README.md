@@ -14,7 +14,7 @@ Usage:
 bash $HOME/user/RIMBANet/script/caller.bsh /path/to/working/directory
 ```
 
-4. When LSF jobs (default `10000`) are completed successfully, create a consensus network structure (default final output `result.links3.links.txt`) consists of de-looped links present in, by default, at least 30% of the 1000 individual structures.
+4. When LSF jobs (default `1000`) are completed successfully, create a consensus network structure (default final output `result.links3.links.txt`) consists of de-looped links present in, by default, at least 30% of the 1000 individual structures.
 ```
 bash $HOME/user/RIMBANet/script/createStructure.bsh bn.param.txt
 ```
