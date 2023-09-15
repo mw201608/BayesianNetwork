@@ -48,7 +48,7 @@ cd $wkDir
 if [ ! -e $dataf ]; then echo "$dataf not found in the working directory" && exit 1 ; fi
 
 #banned matrix
-if [ -e index.html ]; then
+if [ -e $banf ]; then
   echo Use existing ban file $banf
 else
   echo Make default banned matrix file $banf
