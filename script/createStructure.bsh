@@ -37,8 +37,11 @@ if [ "$cutoff" = "" ]; then cutoff=3 ; fi
 if [ ! -e result.links.$cutoff ] ; then
 	echo "perl $cmdRoot/countDirectLinksMatrix.pl $dataf $outDir/$outPref 0 $N result.links.$cutoff result.linksMatrix.$cutoff 0.$cutoff"
 	perl $cmdRoot/countDirectLinksMatrix.pl $dataf $outDir/$outPref 0 $N result.links.$cutoff result.linksMatrix.$cutoff 0.$cutoff
+fi
+if [ ! -e result.links$cutoff.links.txt ] ; then
 	echo "$prog -b $nodef -d $dataf -t 0  -D $nSample -o result.links$cutoff -c result.links.$cutoff >junk$cutoff"
 	$prog -b $nodef -d $dataf -t 0  -D $nSample -o result.links$cutoff -c result.links.$cutoff >$outDir/junk$cutoff
 	grep ">" result.links$cutoff | perl -pe "s/->/\t/" > result.links$cutoff.links.txt
 	rm $outDir/junk$cutoff #clear log file
+	rm result.linksMatrix.$cutoff result.links$cutoff #clear some intermediate files
 fi
