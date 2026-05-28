@@ -20,8 +20,8 @@
 #     Nat Genet, 40, 854-861 (2008)
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-$BNBIN='/hpc/users/wangm05/bin';
-$BN_PERL = "/hpc/users/wangm05/work/bayesian/RIMBANet/Perls";
+$BNBIN='/path/to/bin';
+$BN_PERL = "/path/to/RIMBANet/Perls";
 
 $workDir = $ENV{PWD};
 
